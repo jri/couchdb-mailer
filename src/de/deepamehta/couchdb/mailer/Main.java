@@ -24,7 +24,7 @@ import java.util.Properties;
 
 public final class Main {
 
-	private static final String TEXT_NO_SUBJECT = "<No Subject>";
+    private static final String TEXT_NO_SUBJECT = "<No Subject>";
 
     private static BufferedReader reader;
 
@@ -68,56 +68,59 @@ public final class Main {
 
     /*** JavaMail Part ***/
 
-	public static void sendMail(String from, List recipients, String subject, String body) {
-		try {
-			MimeMessage msg = new MimeMessage(getMailSession());
-			msg.setFrom(new InternetAddress(from));
-			//
-			Iterator i = recipients.iterator();
+    public static void sendMail(String from, List recipients, String subject, String body) {
+        try {
+            MimeMessage msg = new MimeMessage(getMailSession());
+            msg.setFrom(new InternetAddress(from));
+            //
+            Iterator i = recipients.iterator();
             while (i.hasNext()) {
                 Recipient recipient = (Recipient) i.next();
                 Address address = new InternetAddress(recipient.address, recipient.personal);
-    			msg.addRecipient(recipient.type, address);
+                msg.addRecipient(recipient.type, address);
             }
-			//
-			if (subject == null || subject.equals("")) {
-				subject = TEXT_NO_SUBJECT;
-			}
-			msg.setSubject(subject);
-			msg.setText(body, "UTF-8");
-			msg.setSentDate(new Date());
-			//
-			Transport.send(msg);
-		} catch (Throwable e) {
+            //
+            if (subject == null || subject.equals("")) {
+                subject = TEXT_NO_SUBJECT;
+            }
+            msg.setSubject(subject);
+            msg.setText(body, "UTF-8");
+            msg.setSentDate(new Date());
+            //
+            Transport.send(msg);
+        } catch (Throwable e) {
             System.err.println("### error while sending mail: " + e);
-		}
-	}
+        }
+    }
 
-	private static Session getMailSession() {
-		Properties props = new Properties();
-		props.put("mail.smtp.host", "localhost");
-		Session session = Session.getDefaultInstance(props);	// ### authenticator=null
-		session.setDebug(true);		                            // ###
-		return session;
-	}
+    private static Session getMailSession() {
+        Properties props = new Properties();
+        String host = System.getProperty("mail.host", "localhost");
+        System.err.println("### mail host: " + host);
+        props.put("mail.host", host);
+        Session session = Session.getDefaultInstance(props);    // ### authenticator=null
+        session.setDebugOut(System.err);    // must redirect before debug is switched on
+        session.setDebug(true);                                 // ###
+        return session;
+    }
 
-	// Inner Class
+    // Inner Class
 
-	private static class Recipient {
+    private static class Recipient {
 
-		String address;
-		String personal;
-		Message.RecipientType type;
+        String address;
+        String personal;
+        Message.RecipientType type;
 
-		Recipient(String address, String personal, Message.RecipientType type) {
-			this.address = address;
-			this.personal = personal;
-			this.type = type;
-		}
+        Recipient(String address, String personal, Message.RecipientType type) {
+            this.address = address;
+            this.personal = personal;
+            this.type = type;
+        }
 
-		public boolean equals(Object o) {
-			Recipient r = (Recipient) o;
-			return r.type == type && r.address.equals(address);
-		}
-	}
+        public boolean equals(Object o) {
+            Recipient r = (Recipient) o;
+            return r.type == type && r.address.equals(address);
+        }
+    }
 }
