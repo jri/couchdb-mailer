@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<project name="couchdb-mailer" basedir="." default="jar">
+	
+	<property name="version.major" value="0"/>
+	<property name="version.minor" value="1-SNAPSHOT"/>
+	<property name="java.src.dir" value="src"/>
+		
+	<property name="lib.dir" value="lib/"/>
+	<property name="dist.dir" value="dist/"/>
+	<property name="dist.file" value="${dist.dir}/${ant.project.name}-${version.major}.${version.minor}.jar"/>
+
+	<property name="build.dir" value="build"/>
+	<property name="build.classes.dir" value="build/classes"/>
+
+	<property name="deploy.dir" value="/Users/jri/Public/couchdb-lucene-0.4-jdk14/"/>
+
+    <target name="deploy" depends="jar">
+        <copy file="${dist.file}" todir="${deploy.dir}"/>
+    </target>
+
+	<target name="jar" depends="compile" description="Build jar file">
+		<jar destfile="${dist.file}">
+			<fileset dir="${build.classes.dir}"/>
+			<fileset file="LICENSE.TXT"/>
+			<manifest>
+			    <attribute name="Main-Class" value="de.deepamehta.couchdb.mailer.Main"/>
+			    <attribute name="Class-Path" value="mail-1.4.2.jar activation-1.1.1.jar json-lib-2.3-jdk13.jar commons-beanutils-core-1.8.0.jar commons-lang-2.4.jar commons-logging-1.1.1.jar ezmorph-1.0.6.jar commons-collections-3.2.1.jar"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="compile" depends="init">
+		<javac srcdir="${java.src.dir}"
+         destdir="${build.classes.dir}"
+         classpathref="build.classpath"
+         debug="on"
+		target="1.4"
+		/>
+	</target>
+
+	<!-- Cleanup the build paths...
+		Remove all old compiled classes and auto-generated files
+	-->
+	<target name="clean" description="Clean the build directory for a fresh start">
+		<delete dir="build"/>
+		<antcall target="init"/>
+	</target>
+	
+	<!-- build paths -->
+	<path id="build.classpath">
+		<fileset dir="${lib.dir}" includes="**/*jar"/>
+		<dirset dir="${build.dir}"/>
+	</path>
+
+	<!-- Making directories required for building... -->
+	<target name="init">
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${build.classes.dir}"/>
+		<mkdir dir="${dist.dir}"/>
+	</target>
+
+</project>
