@@ -26,65 +26,85 @@ public final class Main {
 
     private static final String TEXT_NO_SUBJECT = "<No Subject>";
 
-    private static BufferedReader reader;
-
     public static void main(final String[] args) {
-
         System.err.println("### initializing couchdb-mailer extension");
-        reader = new BufferedReader(new InputStreamReader(System.in));
-
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
             try {
                 String line = reader.readLine();
                 if (line == null) {
                     break;
                 }
-                // System.err.println("### got line: " + line);
-                process(line);
-                respond();
+                processRequest(line);
+                sendResponse();
             } catch (IOException e) {
-                throw new RuntimeException("### can't read line", e);
+                throw new RuntimeException("### error while reading request", e);
             }
         }
-        System.err.println("### exiting couchdb-mailer");
+        System.err.println("### exiting couchdb-mailer extension");
     }
 
-    private static void process(String line) {
-        JSONObject request = JSONObject.fromObject(line);
-        JSONObject rcpts = JSONObject.fromObject(request.get("body"));
-        List recipients = new ArrayList();
+    private static void processRequest(String line) {
+        try {
+            JSONObject request = JSONObject.fromObject(line);
+            JSONObject body = JSONObject.fromObject(request.get("body"));
+            JSONObject rcpts = JSONObject.fromObject(body.get("recipients"));
+            // System.err.println("### request body=" + body);
+            //
+            Sender sender = getSender(JSONObject.fromObject(body.get("sender")));
+            //
+            List recipients = new ArrayList();
+            addRecipients(JSONObject.fromObject(rcpts.get("to")), recipients, Message.RecipientType.TO);
+            addRecipients(JSONObject.fromObject(rcpts.get("cc")), recipients, Message.RecipientType.CC);
+            addRecipients(JSONObject.fromObject(rcpts.get("bcc")), recipients, Message.RecipientType.BCC);
+            //
+            String subject = body.getString("subject");
+            String message = body.getString("message");
+            //
+            sendMail(sender, recipients, subject, message);
+        } catch (Throwable e) {
+            System.err.println("### error while processing request: " + e);
+            System.err.println("### request=" + line);
+        }
+    }
+
+    private static Sender getSender(JSONObject sender) {
+        String name = (String) sender.keys().next();
+        return new Sender(sender.getString(name), name);
+    }
+
+    private static void addRecipients(JSONObject rcpts, List recipients, Message.RecipientType type) {
         Iterator i = rcpts.keys();
         while (i.hasNext()) {
             String rcpt = (String) i.next();
-            recipients.add(new Recipient(rcpts.getString(rcpt), rcpt, Message.RecipientType.TO));
+            recipients.add(new Recipient(rcpts.getString(rcpt), rcpt, type));
         }
-        //
-        sendMail("jri@deepamehta.de", recipients, "Test", "Text\n2ndline");
     }
 
-    private static void respond() {
+    private static void sendResponse() {
         System.out.println("{\"body\": \"mail sent sucessfully\"}");
     }
 
     /*** JavaMail Part ***/
 
-    public static void sendMail(String from, List recipients, String subject, String body) {
+    public static void sendMail(Sender sender, List recipients, String subject, String text) {
         try {
             MimeMessage msg = new MimeMessage(getMailSession());
-            msg.setFrom(new InternetAddress(from));
-            //
+            // set "from"
+            msg.setFrom(new InternetAddress(sender.address, sender.personal, "UTF-8"));
+            // add recipients
             Iterator i = recipients.iterator();
             while (i.hasNext()) {
                 Recipient recipient = (Recipient) i.next();
-                Address address = new InternetAddress(recipient.address, recipient.personal);
+                Address address = new InternetAddress(recipient.address, recipient.personal, "UTF-8");
                 msg.addRecipient(recipient.type, address);
             }
-            //
+            // set subject, text, and date
             if (subject == null || subject.equals("")) {
                 subject = TEXT_NO_SUBJECT;
             }
             msg.setSubject(subject);
-            msg.setText(body, "UTF-8");
+            msg.setText(text, "UTF-8");
             msg.setSentDate(new Date());
             //
             Transport.send(msg);
@@ -98,13 +118,24 @@ public final class Main {
         String host = System.getProperty("mail.host", "localhost");
         System.err.println("### mail host: " + host);
         props.put("mail.host", host);
-        Session session = Session.getDefaultInstance(props);    // ### authenticator=null
-        session.setDebugOut(System.err);    // must redirect before debug is switched on
-        session.setDebug(true);                                 // ###
+        Session session = Session.getDefaultInstance(props);
+        session.setDebugOut(System.err);    // Note: must redirect before debug is switched on
+        session.setDebug(true);
         return session;
     }
 
-    // Inner Class
+    /*** Helper Classes ***/
+
+    private static class Sender {
+
+        String address;
+        String personal;
+
+        Sender(String address, String personal) {
+            this.address = address;
+            this.personal = personal;
+        }
+    }
 
     private static class Recipient {
 
@@ -118,6 +149,7 @@ public final class Main {
             this.type = type;
         }
 
+        // FIXME: not yet used
         public boolean equals(Object o) {
             Recipient r = (Recipient) o;
             return r.type == type && r.address.equals(address);
