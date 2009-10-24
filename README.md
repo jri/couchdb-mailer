@@ -15,13 +15,13 @@ Build from Source
 2.  Compile and build:
         cd couchdb-mailer
         ant
-    The file `dist/couchdb-mailer-0.1-SNAPSHOT.jar` will be created
+    The file `dist/couchdb-mailer-0.1.jar` will be created
 
 
 Download Binary
 ---------------
 
-<http://cloud.github.com/downloads/jri/couchdb-mailer/couchdb-mailer-0.1-SNAPSHOT.jar>
+<http://cloud.github.com/downloads/jri/couchdb-mailer/couchdb-mailer-0.1.jar>
 
 
 Installation
@@ -29,7 +29,7 @@ Installation
 
 1.  Setup Java libraries:
 
-    1a) Put `couchdb-mailer-0.1-SNAPSHOT.jar` to a directory where you store java libraries  
+    1a) Put `couchdb-mailer-0.1.jar` to a directory where you store java libraries  
     **IMPORTANT**: this directory must be readable by the user which runs the couchdb process (usually user `couchdb`).
 
     1b) Put the following 3rd party libraries to the same directory:
@@ -45,7 +45,7 @@ Installation
 2.  Configure CouchDB: add lines to `/etc/couchdb/local.ini`
 
         [external]
-        mailer=/usr/bin/java -server -Dmail.host=smtp.domain.com -jar /path/to/couchdb-mailer-0.1-SNAPSHOT.jar
+        mailer=/usr/bin/java -server -Dmail.host=smtp.domain.com -jar /path/to/couchdb-mailer-0.1.jar
 
         [httpd_db_handlers]
         _mailer = {couch_httpd_external, handle_external_req, <<"mailer">>}
