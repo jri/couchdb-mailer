@@ -29,10 +29,10 @@ Installation
 
 1.  Setup Java libraries:
 
-1.1 Put `couchdb-mailer-0.1-SNAPSHOT.jar` to a directory where you store java libraries  
-    *IMPORTANT*: this directory must be readable by the user which runs the couchdb process (usually user `couchdb`).
+    1a) Put `couchdb-mailer-0.1-SNAPSHOT.jar` to a directory where you store java libraries  
+    **IMPORTANT**: this directory must be readable by the user which runs the couchdb process (usually user `couchdb`).
 
-1.2 Put the following 3rd party libraries to the same directory:
+    1b) Put the following 3rd party libraries to the same directory:
         mail-1.4.2.jar
         activation-1.1.1.jar
         json-lib-2.3-jdk13.jar
@@ -45,10 +45,13 @@ Installation
 2.  Configure CouchDB: add lines to `/etc/couchdb/local.ini`
 
         [external]
-        mailer=/usr/bin/java -server -jar /path/to/couchdb-mailer-0.1-SNAPSHOT.jar
+        mailer=/usr/bin/java -server -Dmail.host=smtp.domain.com -jar /path/to/couchdb-mailer-0.1-SNAPSHOT.jar
 
         [httpd_db_handlers]
         _mailer = {couch_httpd_external, handle_external_req, <<"mailer">>}
+
+    Replace `smtp.domain.com` with your SMTP server.
+    This server is used by the CouchDB Mailer Extension to send your mails.
 
 3.  Restart CouchDB
 
@@ -60,22 +63,24 @@ From your application send a POST request to
 
     http://www.your-couchdb-host.com/your-couchdb/_mailer
 
-Put the mail content (recipients, subject ...) in the POST request's body.  
+Put the mail content (recipients, subject ...) in the POST request's body, formatted as a JSON object.  
 Example:
 
     {
-        "sender":{"Karl Schlicht":"karl@example.de"},
-        "recipients":{
-            "to":{"Barbara Grünberg":"info@gruenberg.com"},
-            "cc":{"Bertram Wooster":"berty@comedy.com","Mehtap":"mehtap@domain.de"},
-            "bcc":{}
+        "sender": {"Karl Schlicht": "karl@example.de"},
+        "recipients": {
+            "to": {"Barbara Grünberg": "info@gruenberg.com"},
+            "cc": {"Bertram Wooster": "berty@comedy.com", "Mehtap": "mehtap@domain.de"},
+            "bcc": {}
         },
-        "subject":"Test Mail",
-        "message":"Message text\n2nd line"
+        "subject": "Test Mail",
+        "message": "Message text.\n2nd line."
     }
+
+Note: all fields are mandatory but field values may be empty (like "bcc" above).
 
 
 
 ------------
 Jörg Richter  
-Oct 13, 2009
+Oct 24, 2009

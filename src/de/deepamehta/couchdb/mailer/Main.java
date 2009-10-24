@@ -103,7 +103,7 @@ public final class Main {
             if (subject == null || subject.equals("")) {
                 subject = TEXT_NO_SUBJECT;
             }
-            msg.setSubject(subject);
+            msg.setSubject(subject, "UTF-8");
             msg.setText(text, "UTF-8");
             msg.setSentDate(new Date());
             //
