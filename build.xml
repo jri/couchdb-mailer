@@ -2,7 +2,7 @@
 <project name="couchdb-mailer" basedir="." default="jar">
 	
 	<property name="version.major" value="0"/>
-	<property name="version.minor" value="1"/>
+	<property name="version.minor" value="2-SNAPSHOT"/>
 	<property name="java.src.dir" value="src"/>
 		
 	<property name="lib.dir" value="lib/"/>
@@ -24,7 +24,7 @@
 			<fileset file="LICENSE.TXT"/>
 			<manifest>
 			    <attribute name="Main-Class" value="de.deepamehta.couchdb.mailer.Main"/>
-			    <attribute name="Class-Path" value="mail-1.4.2.jar activation-1.1.1.jar json-lib-2.3-jdk13.jar commons-beanutils-core-1.8.0.jar commons-lang-2.4.jar commons-logging-1.1.1.jar ezmorph-1.0.6.jar commons-collections-3.2.1.jar"/>
+			    <attribute name="Class-Path" value="mail-1.4.2.jar activation-1.1.1.jar couchdb4j-0.2.1-jdk14.jar json-lib-2.3-jdk13.jar commons-httpclient-3.1.jar commons-codec-1.4.jar commons-beanutils-core-1.8.0.jar commons-lang-2.4.jar commons-logging-1.1.1.jar commons-collections-3.2.1.jar ezmorph-1.0.6.jar"/>
 			</manifest>
 		</jar>
 	</target>
