@@ -102,7 +102,7 @@ All attachments of that CouchDB document will be added as attachments to the mai
 Version History
 ---------------
 
-`v0.1` -- Oct 24, 2009 -- Basic functionality
+`v0.1` -- Oct 24, 2009 -- Basic functionality  
 `v0.2` -- Upcoming -- Attachments
 
 

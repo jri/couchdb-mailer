@@ -115,17 +115,21 @@ public final class Main {
             //
             JSONObject attachs = doc.getJSONObject("_attachments");
             System.err.println("### " + attachs.size() + " attachments");
-            Iterator i = attachs.keys();
-            while (i.hasNext()) {
-                String fileName = (String) i.next();
-                JSONObject attachment = JSONObject.fromObject(attachs.get(fileName));
-                String mimeType = attachment.getString("content_type");
-                byte[] content = db.getAttachment(docID, fileName);
-                System.err.println("### " + fileName + " (" + mimeType + "), " + content.length + " bytes");
-                attachments.add(new Attachment(fileName, mimeType, content));
+            // Note: if the document has no _attachment field the JSON object is empty and keys() would throw a JSONException
+            if (!attachs.isEmpty()) {
+                Iterator i = attachs.keys();
+                while (i.hasNext()) {
+                    String fileName = (String) i.next();
+                    JSONObject attachment = JSONObject.fromObject(attachs.get(fileName));
+                    String mimeType = attachment.getString("content_type");
+                    byte[] content = db.getAttachment(docID, fileName);
+                    System.err.println("### " + fileName + " (" + mimeType + "), " + content.length + " bytes");
+                    attachments.add(new Attachment(fileName, mimeType, content));
+                }
             }
         } catch (Throwable e) {
             System.err.println("### error while retrieving attachments: " + e);
+            e.printStackTrace(System.err);
         }
         return attachments;
     }
@@ -142,11 +146,13 @@ public final class Main {
         if (couchDBSession == null) {
             // figure out CouchDB port by examining the request
             JSONObject headers = JSONObject.fromObject(request.get("headers"));
-            String host = headers.getString("Host");
-            int port = Integer.parseInt(host.split(":")[1]);
+            String[] hs = headers.getString("Host").split(":");
+            String host = hs[0];
+            int port = Integer.parseInt(hs[1]);
+            System.err.println("### CouchDB host: " + host);
             System.err.println("### CouchDB port: " + port);
             //
-            couchDBSession = new Session("localhost", port);     // ### TODO: configurable host
+            couchDBSession = new Session(host, port);
         }
     }
 
@@ -233,6 +239,7 @@ public final class Main {
 		    //
     		MimeBodyPart binaryPart = new MimeBodyPart();
     		binaryPart.setContent(attachment.content, attachment.mimeType);
+    		binaryPart.setFileName(attachment.fileName);
     		multipart.addBodyPart(binaryPart);
 	    }
 	    //
