@@ -41,28 +41,35 @@ public final class Main {
         System.err.println("### initializing couchdb-mailer extension");
         initMailSession();
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        Response response = null;
         while (true) {
             try {
                 String line = reader.readLine();
                 if (line == null) {
                     break;
                 }
-                processRequest(line);
-                sendResponse();
+                response = processRequest(line);
             } catch (IOException e) {
-                throw new RuntimeException("### error while reading request", e);
+                System.err.println("### error while reading request:");
+                e.printStackTrace(System.err);
+                response = new Response(false, "Error while reading request: " + e);
+            } finally {
+                sendResponse(response);
             }
         }
         System.err.println("### exiting couchdb-mailer extension");
     }
 
-    private static void processRequest(String line) {
+    /**
+     * Parses the request and sends the mail.
+     */
+    private static Response processRequest(String line) {
         try {
+            // --- parse request ---
             JSONObject request = JSONObject.fromObject(line);
             JSONObject body = JSONObject.fromObject(request.get("body"));
             JSONObject rcpts = JSONObject.fromObject(body.get("recipients"));
             initCouchDBSession(request);
-            // System.err.println("### request body=" + body);
             //
             Sender sender = getSender(JSONObject.fromObject(body.get("sender")));
             //
@@ -79,17 +86,17 @@ public final class Main {
             if (docID != null) {
                 attachments = getAttachments(getDatabase(request), docID);
             }
-            //
-            sendMail(sender, recipients, subject, message, attachments);
+            // --- send mail ---
+            return sendMail(sender, recipients, subject, message, attachments);
         } catch (Throwable e) {
-            System.err.println("### error while processing request: " + e);
+            System.err.println("### error while processing request " + line + ":");
             e.printStackTrace(System.err);
-            System.err.println("### request: " + line);
+            return new Response(false, "ERROR: " + e);
         }
     }
 
-    private static void sendResponse() {
-        System.out.println("{\"body\": \"mail sent sucessfully\"}");
+    private static void sendResponse(Response response) {
+        System.out.println("{\"json\": " + response.toJSON() + "}");
     }
 
     //
@@ -108,8 +115,8 @@ public final class Main {
     }
 
     private static List getAttachments(String database, String docID) {
-        List attachments = new ArrayList();
         try {
+            List attachments = new ArrayList();
             Database db = couchDBSession.getDatabase(database);
             Document doc = db.getDocument(docID);
             //
@@ -127,11 +134,10 @@ public final class Main {
                     attachments.add(new Attachment(fileName, mimeType, content));
                 }
             }
+            return attachments;
         } catch (Throwable e) {
-            System.err.println("### error while retrieving attachments: " + e);
-            e.printStackTrace(System.err);
+            throw new RuntimeException("error while retrieving attachment", e);
         }
-        return attachments;
     }
 
 
@@ -181,7 +187,7 @@ public final class Main {
 
 
 
-    public static void sendMail(Sender sender, List recipients, String subject, String text, List attachments) {
+    public static Response sendMail(Sender sender, List recipients, String subject, String text, List attachments) {
         try {
             MimeMessage message = new MimeMessage(mailSession);
             // sender
@@ -208,8 +214,11 @@ public final class Main {
             }
             //
             Transport.send(message);
+            return new Response(true, "Mail has been send to " + recipients.size() + " recipients.");
         } catch (Throwable e) {
-            System.err.println("### error while sending mail: " + e);
+            System.err.println("### error while sending mail \"" + subject + "\":");
+            e.printStackTrace(System.err);
+            return new Response(false, "ERROR: " + e);
         }
     }
 
@@ -285,6 +294,7 @@ public final class Main {
     }
 
     private static class Attachment {
+
         String fileName;
         String mimeType;
         byte[] content;
@@ -293,6 +303,24 @@ public final class Main {
             this.fileName = fileName;
             this.mimeType = mimeType;
             this.content = content;
+        }
+    }
+
+    private static class Response {
+
+        boolean success;
+        String message;
+
+        Response(boolean success, String message) {
+            this.success = success;
+            this.message = message;
+        }
+
+        JSONObject toJSON() {
+            JSONObject response = new JSONObject();
+            response.element("success", success);
+            response.element("message", message);
+            return response;
         }
     }
 }
