@@ -89,7 +89,7 @@ public final class Main {
             // --- send mail ---
             return sendMail(sender, recipients, subject, message, attachments);
         } catch (Throwable e) {
-            System.err.println("### error while processing request " + line + ":");
+            System.err.println("### error while processing request " + line);
             e.printStackTrace(System.err);
             return new Response(false, "ERROR: " + e);
         }
@@ -102,8 +102,12 @@ public final class Main {
     //
 
     private static Sender getSender(JSONObject sender) {
-        String name = (String) sender.keys().next();
-        return new Sender(sender.getString(name), name);
+        try {
+            String name = (String) sender.keys().next();
+            return new Sender(sender.getString(name), name);
+        } catch (Throwable e) {
+            throw new RuntimeException("You entered no sender or sender is unknown", e);
+        }
     }
 
     private static void addRecipients(JSONObject rcpts, List recipients, Message.RecipientType type) {
@@ -136,7 +140,7 @@ public final class Main {
             }
             return attachments;
         } catch (Throwable e) {
-            throw new RuntimeException("error while retrieving attachment", e);
+            throw new RuntimeException("Problem with attachment. Caused by: " + e, e);
         }
     }
 
