@@ -15,14 +15,13 @@ Build from Source
 2.  Compile and build:
         cd couchdb-mailer
         ant
-    The file `dist/couchdb-mailer-0.2-SNAPSHOT.jar` will be created
+    The file `dist/couchdb-mailer-0.2.jar` will be created
 
 
 Download Binary
 ---------------
 
-<http://cloud.github.com/downloads/jri/couchdb-mailer/couchdb-mailer-0.1.jar>  
-<http://cloud.github.com/downloads/jri/couchdb-mailer/couchdb-mailer-0.2-SNAPSHOT.jar>
+<http://cloud.github.com/downloads/jri/couchdb-mailer/couchdb-mailer-0.2.jar>
 
 See *Version History* below.
 
@@ -32,7 +31,7 @@ Installation
 
 1.  Setup Java libraries:
 
-    1a) Put `couchdb-mailer-0.2-SNAPSHOT.jar` to a directory where you store java libraries  
+    1a) Put `couchdb-mailer-0.2.jar` to a directory where you store java libraries  
     **IMPORTANT**: this directory must be readable by the user which runs the couchdb process (usually user `couchdb`).
 
     1b) Put the following 3rd party libraries to the same directory:
@@ -54,7 +53,7 @@ Installation
 2.  Configure CouchDB: add lines to `/etc/couchdb/local.ini`
 
         [external]
-        mailer=/usr/bin/java -server -Dmail.host=smtp.domain.com -jar /path/to/couchdb-mailer-0.2-SNAPSHOT.jar
+        mailer=/usr/bin/java -server -Dmail.host=smtp.domain.com -jar /path/to/couchdb-mailer-0.2.jar
 
         [httpd_db_handlers]
         _mailer = {couch_httpd_external, handle_external_req, <<"mailer">>}
@@ -90,6 +89,21 @@ Example:
 
 Note: all fields are mandatory but field values may be empty (like "bcc" above).
 
+As response you get a JSON object with the 2 fields `success` (boolean) and `message` (string).  
+Example (success):
+
+    {
+        "success": true,
+        "message": "Mail has been send to 3 recipients."
+    }
+
+Example (failure):
+
+    {
+        "success": false,
+        "message": "ERROR: javax.mail.internet.AddressException: Local address contains illegal character in string ''jri(at)deepamehta.de''"
+    }
+
 ### Attachments ###
 
 Add the ID of a CouchDB document to the URL, e.g.:
@@ -103,10 +117,10 @@ Version History
 ---------------
 
 `v0.1` -- Oct 24, 2009 -- Basic functionality  
-`v0.2` -- Upcoming -- Attachments
+`v0.2` -- Dec  1, 2009 -- Attachments, Success/failure reporting
 
 
 
 ------------
 Jörg Richter  
-Oct 25, 2009
+Dec 1, 2009
