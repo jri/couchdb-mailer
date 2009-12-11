@@ -84,10 +84,13 @@ Example:
             "bcc": {}
         },
         "subject": "Test Mail",
-        "message": "Message text.\n2nd line."
+        "message": "Message text.\n2nd line.",
+        "message-format": "plain"
     }
 
-Note: all fields are mandatory but field values may be empty (like "bcc" above).
+Note: all fields are mandatory, however, the `recipients` subfields may be empty (like "bcc" above).
+
+Possible values for `message-format` field are `plain` and `html`.
 
 As response you get a JSON object with the 2 fields `success` (boolean) and `message` (string).  
 Example (success):
@@ -116,11 +119,12 @@ All attachments of that CouchDB document will be added as attachments to the mai
 Version History
 ---------------
 
-`v0.1` -- Oct 24, 2009 -- Basic functionality  
-`v0.2` -- Dec  1, 2009 -- Attachments, Success/failure reporting
+**v0.3** -- upcoming     -- HTML mails  
+**v0.2** -- Dec  1, 2009 -- Attachments, Success/failure reporting  
+**v0.1** -- Oct 24, 2009 -- Basic functionality
 
 
 
 ------------
 Jörg Richter  
-Dec 1, 2009
+Dec 11, 2009

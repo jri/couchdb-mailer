@@ -80,6 +80,8 @@ public final class Main {
             //
             String subject = body.getString("subject");
             String message = body.getString("message");
+            String format = body.getString("message-format");
+            System.err.println("### content type: text/" + format);
             //
             List attachments = null;
             String docID = getDocID(request);
@@ -87,7 +89,7 @@ public final class Main {
                 attachments = getAttachments(getDatabase(request), docID);
             }
             // --- send mail ---
-            return sendMail(sender, recipients, subject, message, attachments);
+            return sendMail(sender, recipients, subject, message, format, attachments);
         } catch (Throwable e) {
             System.err.println("### error while processing request " + line);
             e.printStackTrace(System.err);
@@ -191,7 +193,7 @@ public final class Main {
 
 
 
-    public static Response sendMail(Sender sender, List recipients, String subject, String text, List attachments) {
+    public static Response sendMail(Sender sender, List recipients, String subject, String text, String format, List attachments) {
         try {
             MimeMessage message = new MimeMessage(mailSession);
             // sender
@@ -211,9 +213,9 @@ public final class Main {
             message.setSentDate(new Date());
             // content
             if (attachments.size() == 0) {
-                message.setText(text, "UTF-8");
+                message.setText(text, "UTF-8", format);
             } else {
-                MimeMultipart multipart = createMultipart(text, attachments);
+                MimeMultipart multipart = createMultipart(text, format, attachments);
                 message.setContent(multipart);
             }
             //
@@ -238,12 +240,12 @@ public final class Main {
         mailSession.setDebug(true);
     }
 
-    private static MimeMultipart createMultipart(String text, List attachments) throws MessagingException {
+    private static MimeMultipart createMultipart(String text, String format, List attachments) throws MessagingException {
         // build mutilpart
         MimeMultipart multipart = new MimeMultipart();
         // 1) add text part
 		MimeBodyPart textPart = new MimeBodyPart();
-		textPart.setText(text, "UTF-8");
+		textPart.setText(text, "UTF-8", format);
 		multipart.addBodyPart(textPart);
 		// 2) add binary parts
 		Iterator i = attachments.iterator();
