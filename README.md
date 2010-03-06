@@ -15,13 +15,13 @@ Build from Source
 2.  Compile and build:
         cd couchdb-mailer
         ant
-    The file `dist/couchdb-mailer-0.2.jar` will be created
+    The file `dist/couchdb-mailer-0.3.jar` will be created
 
 
 Download Binary
 ---------------
 
-<http://cloud.github.com/downloads/jri/couchdb-mailer/couchdb-mailer-0.2.jar>
+<http://cloud.github.com/downloads/jri/couchdb-mailer/couchdb-mailer-0.3.jar>
 
 See *Version History* below.
 
@@ -31,7 +31,7 @@ Installation
 
 1.  Setup Java libraries:
 
-    1a) Put `couchdb-mailer-0.2.jar` to a directory where you store java libraries  
+    1a) Put `couchdb-mailer-0.3.jar` to a directory where you store java libraries  
     **IMPORTANT**: this directory must be readable by the user which runs the couchdb process (usually user `couchdb`).
 
     1b) Put the following 3rd party libraries to the same directory:
@@ -53,7 +53,7 @@ Installation
 2.  Configure CouchDB: add lines to `/etc/couchdb/local.ini`
 
         [external]
-        mailer=/usr/bin/java -server -Dmail.host=smtp.domain.com -jar /path/to/couchdb-mailer-0.2.jar
+        mailer=/usr/bin/java -server -Dmail.host=smtp.domain.com -jar /path/to/couchdb-mailer-0.3.jar
 
         [httpd_db_handlers]
         _mailer = {couch_httpd_external, handle_external_req, <<"mailer">>}
@@ -90,7 +90,7 @@ Example:
 
 Note: all fields are mandatory, however, the `recipients` subfields may be empty (like "bcc" above).
 
-Possible values for `message-format` field are `plain` and `html`.
+Possible values for `message-format` are `plain` and `html`.
 
 As response you get a JSON object with the 2 fields `success` (boolean) and `message` (string).  
 Example (success):
@@ -119,12 +119,21 @@ All attachments of that CouchDB document will be added as attachments to the mai
 Version History
 ---------------
 
-**v0.3** -- upcoming     -- HTML mails  
-**v0.2** -- Dec  1, 2009 -- Attachments, Success/failure reporting  
-**v0.1** -- Oct 24, 2009 -- Basic functionality
+**v0.3** -- Mar 6, 2010
+
+* HTML mails
+
+**v0.2** -- Dec 1, 2009
+
+* Attachments
+* Success/failure reporting
+
+**v0.1** -- Oct 24, 2009
+
+* Basic functionality
 
 
 
 ------------
 Jörg Richter  
-Dec 11, 2009
+Mar 6, 2010
